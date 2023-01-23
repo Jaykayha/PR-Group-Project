@@ -45,4 +45,28 @@ for x in range(0, n_rows):
             
 data = {"Timestamp": timestamps, "Movie ID": movie_ids, "Prediction": predictions, "Map": maps}
 df2 = pd.DataFrame(data)
-print(df2)
+
+movie_ids2 = []
+preds2 = []
+maps2 = []
+
+for id in ids:
+    rows_pred_true = df2.loc[(df2["Movie ID"] == id) & (df2["Prediction"] == 1)]
+    rows_pred_true2 = rows_pred_true["Map"]
+
+    mean_array_true = np.mean(rows_pred_true2, axis=0)
+    normalized_mean_array_true = mean_array_true / np.sum(mean_array_true)
+
+    rows_pred_false = df2.loc[(df2["Movie ID"] == id) & (df2["Prediction"] == 0)]
+    rows_pred_false2 = rows_pred_false["Map"]
+
+    mean_array_false = np.mean(rows_pred_false2, axis=0)
+    normalized_mean_array_false = mean_array_false / np.sum(mean_array_false)
+    
+    movie_ids2.extend([id, id])
+    preds2.extend([1,0])
+    maps2.extend([normalized_mean_array_true, normalized_mean_array_false])
+
+data2 = {"Movie ID": movie_ids2, "Prediction": preds2, "Map": maps2}
+df3 = pd.DataFrame(data2)
+print(df3)
