@@ -1,6 +1,7 @@
 # 1) set negative shap values to 0 (lmk if anyone disagrees and we can diacuss)
 # 2) reduce to 3x3 using sums or averages by region
 # 3) normalize so that the sum of all cells is a constant number, probably 1
+import pickle
 
 # Also lets add these new processed maps all as new columns in the same dataframe
 # we already created and imported from drive.
@@ -20,19 +21,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from skimage.measure import block_reduce
-from scipy.signal import convolve2d
 from skimage.transform import resize
 
 # load the pickle data
 data = pd.read_pickle('shap_and_occlusion_maps.pickle')
-print(data)
 
 # extract SHAP and Occlusion maps
 shap_map_0 = data.shap_0
-print(data.filename[7])
-occlusion_map_0 = data.occlusion_0
-
 shap_map_1 = data.shap_1
+
+occlusion_map_0 = data.occlusion_0
 occlusion_map_1 = data.occlusion_1
 
 # initialize reshaped and normalized maps
@@ -46,28 +44,81 @@ for i in range(len(shap_map_0)):
     # negative values to 0
     shap_map_0[i] = np.clip(shap_map_0[i], a_min=0, a_max=None)
 
-    # reshape the saliency map into a 3x3 array
-    #shap_map0 = np.reshape(shap_map_0[i], (3, 3))
-    # filter
-    #avg_filter = np.ones((3, 3)) / 9
-    #shap_map0 = convolve2d(shap_map_0[i], avg_filter, mode='valid')
-    # take the average across each 3x3 cell
-    #shap_map0 = np.mean(shap_map0, axis=(0, 1))
-
+    # reshape the saliency map into a 3x3 array, using pooling
     shap_map0 = block_reduce(shap_map_0[i], block_size=(3, 3), func=np.mean)
-    # average the values in each cell
     shap_map0 = resize(shap_map_0[i], (3, 3), order=1, preserve_range=True)
-    # shap_map0 = np.mean(shap_map_0[i], axis=(1))
-    # shap_map0 = shap_map0.reshape(3,3)
 
     # normalize and get rid of null and Nan values if there are any
     shap_map0 = np.nan_to_num(shap_map0)
     shap_map0 = shap_map0 / np.sum(shap_map0)
+
     # add it back to the array
-    print(shap_map0.shape)
     shap_map_0_3x3.append(shap_map0)
 
-# visualize the grid
-plt.imshow(shap_map_0_3x3[1])
-plt.colorbar()
-plt.show()
+for i in range(len(shap_map_1)):
+    # negative values to 0
+    shap_map_1[i] = np.clip(shap_map_1[i], a_min=0, a_max=None)
+
+    # reshape the saliency map into a 3x3 array, using pooling
+    shap_map1 = block_reduce(shap_map_1[i], block_size=(3, 3), func=np.mean)
+    shap_map1 = resize(shap_map_1[i], (3, 3), order=1, preserve_range=True)
+
+    # normalize and get rid of null and Nan values if there are any
+    shap_map1 = np.nan_to_num(shap_map1)
+    shap_map1 = shap_map1 / np.sum(shap_map1)
+
+    # add it back to the array
+    shap_map_1_3x3.append(shap_map1)
+
+for i in range(len(occlusion_map_0)):
+    # negative values to 0
+    occlusion_map_0[i] = np.clip(occlusion_map_0[i], a_min=0, a_max=None)
+
+    # reshape the saliency map into a 3x3 array, using pooling
+    occlusion_map0 = block_reduce(occlusion_map_0[i], block_size=(3, 3), func=np.mean)
+    occlusion_map0 = resize(occlusion_map0[i], (3, 3), order=1, preserve_range=True)
+
+    # normalize and get rid of null and Nan values if there are any
+    occlusion_map0 = np.nan_to_num(occlusion_map0)
+    occlusion_map0 = occlusion_map0 / np.sum(occlusion_map0)
+
+    # add it back to the array
+    occlusion_map_0_3x3.append(occlusion_map0)
+
+for i in range(len(occlusion_map_1)):
+    # negative values to 0
+    occlusion_map_1[i] = np.clip(occlusion_map_1[i], a_min=0, a_max=None)
+
+    # reshape the saliency map into a 3x3 array, using pooling
+    occlusion_map1 = block_reduce(occlusion_map_1[i], block_size=(3, 3), func=np.mean)
+    occlusion_map1 = resize(occlusion_map_1[i], (3, 3), order=1, preserve_range=True)
+
+    # normalize and get rid of null and Nan values if there are any
+    occlusion_map1 = np.nan_to_num(occlusion_map1)
+    occlusion_map1 = occlusion_map1 / np.sum(occlusion_map1)
+
+    # add it back to the array
+    occlusion_map_1_3x3.append(occlusion_map1)
+
+#add the 3x3 maps as new columns in data
+data['shap0_3x3'] = shap_map_0_3x3
+data['shap1_3x3'] = shap_map_1_3x3
+data['occlusion0_3x3'] = occlusion_map_0_3x3
+data['occlusion1_3x3'] = occlusion_map_1_3x3
+
+#save the data back into pickle file
+#TODO save to pickle file
+#with open('shap_and_occlusion_maps.pickle', 'wb') as f:
+#    pickle.dump(data, f)
+
+# visualize the new maps
+#TODO Fix diplaying of maps
+for i in range(len(data.shap_0)):
+    plt.figure()
+    plt.imshow(shap_map_0[i])
+    plt.title('Original SHAP')
+
+    plt.figure()
+    plt.imshow(shap_map_0_3x3[i])
+    plt.title('3x3 SHAP')
+
