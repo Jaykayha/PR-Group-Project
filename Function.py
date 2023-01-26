@@ -70,3 +70,5 @@ for id in ids:
 data2 = {"Movie ID": movie_ids2, "Prediction": preds2, "Map": maps2}
 df3 = pd.DataFrame(data2)
 print(df3)
+
+df3.to_pickle('survey_answers.pkl')
