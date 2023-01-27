@@ -47,8 +47,8 @@ data = {"Timestamp": timestamps, "Movie ID": movie_ids, "Prediction": prediction
 df2 = pd.DataFrame(data)
 
 movie_ids2 = []
-preds2 = []
-maps2 = []
+maps2_0 = []
+maps2_1 = []
 
 for id in ids:
     rows_pred_true = df2.loc[(df2["Movie ID"] == id) & (df2["Prediction"] == 1)]
@@ -63,51 +63,80 @@ for id in ids:
     mean_array_false = np.mean(rows_pred_false2, axis=0)
     normalized_mean_array_false = mean_array_false / np.sum(mean_array_false)
     
-    movie_ids2.extend([id, id])
-    preds2.extend([1,0])
-    maps2.extend([normalized_mean_array_true, normalized_mean_array_false])
+    movie_ids2.append(id)
+    maps2_1.append(normalized_mean_array_true)
+    maps2_0.append(normalized_mean_array_false)
 
-data2 = {"Movie ID": movie_ids2, "Prediction": preds2, "Map": maps2}
+data2 = {"Movie ID": movie_ids2, "Map_0": maps2_0, "Map_1": maps2_1}
 df3 = pd.DataFrame(data2)
 
-import matplotlib.pyplot as plt
+from scipy.stats import wasserstein_distance
 
-# Create a figure with 10 rows and 3 columns of subplots
-fig, axs = plt.subplots(5, 6, figsize=(30, 30))
-
-# Generate 30 random 3x3 arrays
-arrays = [np.random.rand(3, 3) for _ in range(30)]
-
-print(arrays[0])
-print(np.array(df3["Map"][0]))
-
-# Plot each array in a separate subplot
-for i, ax in enumerate(axs.flat):
-    if i < 30:
-        if np.isnan(df3["Map"][i]).any():
-            ax.axis('off')
-        else:
-            ax.imshow(np.array(df3["Map"][i]))
-            ax.axis('off')
-        ax.set_title("ID: " + str(df3["Movie ID"][i]) + " Prediction: " + str(df3["Prediction"][i]), loc='center')
-plt.subplots_adjust(wspace=0)
-plt.show()
+data_shap = pd.read_pickle('shap_and_occlusion_maps.pickle')
 
 
-# df3.to_pickle('survey_answers.pkl')
+emd_human_shap_0 = []
+emd_human_shap_1 = []
+emd_human_occlusion_0 = []
+emd_human_occlusion_1 = []
+
+data_shap = data_shap.drop(3)
+data_shap = data_shap.reset_index(drop=True)
+
+data_shap['id'] = data_shap['id'].astype(int)
+data_shap = data_shap.sort_values(by='id', ascending=True)
+
+# Occlusion 0
+for i in range(0, 15):
+    distribution1 = data_shap["occlusion0_3x3"][i].flatten()
+    distribution2 = df3["Map_0"][i].flatten()
+    emd = wasserstein_distance(distribution1, distribution2)
+
+    emd_human_occlusion_0.append(emd)
+
+# Occlusion 1
+for i in range(0, 15):
+    distribution1 = data_shap["occlusion1_3x3"][i].flatten()
+    distribution2 = df3["Map_1"][i].flatten()
+    emd = wasserstein_distance(distribution1, distribution2)
 
 
-# from scipy.stats import wasserstein_distance
+    emd_human_occlusion_1.append(emd)
 
-# data_shap = pd.read_pickle('shap_and_occlusion_maps.pickle')
+# Shap 1
+for i in range(0, 15):
+    distribution1 = data_shap["shap0_3x3"][i].flatten()
+    distribution2 = df3["Map_0"][i].flatten()
+    emd = wasserstein_distance(distribution1, distribution2)
 
-# print(data_shap["occlusion_0"][1])
 
-# emd_human_shap = []
-# emd_human_occlusion = []
+    emd_human_shap_0.append(emd)
+
+# Shap 1
+for i in range(0, 15):
+    distribution1 = data_shap["shap1_3x3"][i].flatten()
+    distribution2 = df3["Map_1"][i].flatten()
+    emd = wasserstein_distance(distribution1, distribution2)
+
+
+    emd_human_shap_1.append(emd)
+
+
+data3 = {"id": ids,"Shap_to_Human_0": emd_human_shap_0, "Shap_to_Human_1": emd_human_shap_1, "Occlusion_to_Human_0": emd_human_occlusion_0, "Occlusion_to_Human_1": emd_human_occlusion_1}
+df4 = pd.DataFrame(data3)
+
+mean1 = np.nanmean(emd_human_shap_0)
+mean2 = np.nanmean(emd_human_shap_1)
+mean3 = np.nanmean(emd_human_occlusion_0)
+mean4 = np.nanmean(emd_human_occlusion_1)
+
+print("Human shap 0: " + str(mean1))
+print("Human shap 1: " + str(mean2))
+print("Human occlusion 0: " + str(mean3))
+print("Human occlusion 1: " + str(mean4))
+# df4.to_csv('out.csv')  
 
 # for id in ids:
-
 
 # # define the two probability distributions
 # distribution1 = [0.1, 0.3, 0.3, 0.2, 0.1]
@@ -116,3 +145,32 @@ plt.show()
 # calculate the EMD/Wasserstein distance
 # emd = wasserstein_distance(distribution1, distribution2)
 # print(emd)
+
+
+# import matplotlib.pyplot as plt
+
+# # Create a figure with 10 rows and 3 columns of subplots
+# fig, axs = plt.subplots(5, 6, figsize=(30, 30))
+
+# # Generate 30 random 3x3 arrays
+# arrays = [np.random.rand(3, 3) for _ in range(30)]
+
+# print(arrays[0])
+# print(np.array(df3["Map"][0]))
+
+# # Plot each array in a separate subplot
+# for i, ax in enumerate(axs.flat):
+#     if i < 30:
+#         if np.isnan(df3["Map"][i]).any():
+#             ax.axis('off')
+#         else:
+#             ax.imshow(np.array(df3["Map"][i]))
+#             ax.axis('off')
+#         ax.set_title("ID: " + str(df3["Movie ID"][i]) + " Prediction: " + str(df3["Prediction"][i]), loc='center')
+# plt.subplots_adjust(wspace=0)
+# plt.show()
+
+
+# # df3.to_pickle('survey_answers.pkl')
+
+
