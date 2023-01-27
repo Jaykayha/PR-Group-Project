@@ -69,6 +69,50 @@ for id in ids:
 
 data2 = {"Movie ID": movie_ids2, "Prediction": preds2, "Map": maps2}
 df3 = pd.DataFrame(data2)
-print(df3)
 
-df3.to_pickle('survey_answers.pkl')
+import matplotlib.pyplot as plt
+
+# Create a figure with 10 rows and 3 columns of subplots
+fig, axs = plt.subplots(5, 6, figsize=(30, 30))
+
+# Generate 30 random 3x3 arrays
+arrays = [np.random.rand(3, 3) for _ in range(30)]
+
+print(arrays[0])
+print(np.array(df3["Map"][0]))
+
+# Plot each array in a separate subplot
+for i, ax in enumerate(axs.flat):
+    if i < 30:
+        if np.isnan(df3["Map"][i]).any():
+            ax.axis('off')
+        else:
+            ax.imshow(np.array(df3["Map"][i]))
+            ax.axis('off')
+        ax.set_title("ID: " + str(df3["Movie ID"][i]) + " Prediction: " + str(df3["Prediction"][i]), loc='center')
+plt.subplots_adjust(wspace=0)
+plt.show()
+
+
+# df3.to_pickle('survey_answers.pkl')
+
+
+# from scipy.stats import wasserstein_distance
+
+# data_shap = pd.read_pickle('shap_and_occlusion_maps.pickle')
+
+# print(data_shap["occlusion_0"][1])
+
+# emd_human_shap = []
+# emd_human_occlusion = []
+
+# for id in ids:
+
+
+# # define the two probability distributions
+# distribution1 = [0.1, 0.3, 0.3, 0.2, 0.1]
+# distribution2 = [0.2, 0.2, 0.2, 0.2, 0.2]
+
+# calculate the EMD/Wasserstein distance
+# emd = wasserstein_distance(distribution1, distribution2)
+# print(emd)
