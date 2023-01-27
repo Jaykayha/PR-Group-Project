@@ -107,14 +107,14 @@ data['occlusion0_3x3'] = occlusion_map_0_3x3
 data['occlusion1_3x3'] = occlusion_map_1_3x3
 
 #save the data back into pickle file
-with open('shap_and_occlusion_maps_copy.pickle', 'wb') as f:
+with open('shap_and_occlusion_maps.pickle', 'wb') as f:
     pickle.dump(data, f)
 
 # visualize the new maps
-data1 = pd.read_pickle('shap_and_occlusion_maps_copy.pickle')
+# data1 = pd.read_pickle('shap_and_occlusion_maps_copy.pickle')
 
-nr_imgs = len(data1)
-fig, axes = plt.subplots(nrows=nr_imgs, ncols=8, figsize=(40, nr_imgs * 4))
+nr_imgs = len(data)
+fig, axes = plt.subplots(nrows=nr_imgs, ncols=4, figsize=(40, nr_imgs * 4))
 # fig.tight_layout()
 
 axes[0, 0].set_title("SHAP\n(not action)")
@@ -125,13 +125,13 @@ axes[0, 2].set_title("SHAP\n(action)")
 
 axes[0, 3].set_title("SHAP 3X3\n(action)")
 
-axes[0, 4].set_title("Occlusion\n(NOT action)")
-
-axes[0, 5].set_title("Occlusion 3x3\n(NOT action)")
-
-axes[0, 6].set_title("Occlusion\n(action)")
-
-axes[0, 7].set_title("Occlusion 3x3\n(action)")
+# axes[0, 4].set_title("Occlusion\n(NOT action)")
+#
+# axes[0, 5].set_title("Occlusion 3x3\n(NOT action)")
+#
+# axes[0, 6].set_title("Occlusion\n(action)")
+#
+# axes[0, 7].set_title("Occlusion 3x3\n(action)")
 
 # make a color map
 from matplotlib.colors import LinearSegmentedColormap
@@ -144,7 +144,7 @@ for l in np.linspace(0, 1, 100):
 
 cm = LinearSegmentedColormap.from_list("shap", colors)
 
-for index, row in data1.iterrows():
+for index, row in data.iterrows():
     axes[index, 0].matshow(row['shap_0'], cmap=cm)
     axes[index, 0].axis('off')
 
@@ -157,17 +157,17 @@ for index, row in data1.iterrows():
     axes[index, 3].matshow(row['shap1_3x3'])
     axes[index, 3].axis('off')
 
-    axes[index, 4].matshow(row['occlusion_0'])
-    axes[index, 4].axis('off')
-
-    axes[index, 5].matshow(row['occlusion0_3x3'])
-    axes[index, 5].axis('off')
-
-    axes[index, 6].matshow(row['occlusion_1'])
-    axes[index, 6].axis('off')
-
-    axes[index, 7].matshow(row['occlusion1_3x3'])
-    axes[index, 7].axis('off')
+    # axes[index, 4].matshow(row['occlusion_0'])
+    # axes[index, 4].axis('off')
+    #
+    # axes[index, 5].matshow(row['occlusion0_3x3'])
+    # axes[index, 5].axis('off')
+    #
+    # axes[index, 6].matshow(row['occlusion_1'])
+    # axes[index, 6].axis('off')
+    #
+    # axes[index, 7].matshow(row['occlusion1_3x3'])
+    # axes[index, 7].axis('off')
 
 plt.show()
     # axes[2].matshow(heatmap1)
