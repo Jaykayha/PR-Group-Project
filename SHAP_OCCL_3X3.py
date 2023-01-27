@@ -110,7 +110,7 @@ data['occlusion1_3x3'] = occlusion_map_1_3x3
 with open('shap_and_occlusion_maps.pickle', 'wb') as f:
     pickle.dump(data, f)
 
-# visualize the new maps
+# visualize the new map
 # data1 = pd.read_pickle('shap_and_occlusion_maps_copy.pickle')
 
 nr_imgs = len(data)
